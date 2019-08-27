@@ -842,6 +842,14 @@ class BaseViewer {
       source: this,
       location: this._location,
     });
+
+    // 移动端调整高度，文档适应屏幕居中 pc注销
+    let viewHeight = $('#viewer .page').height();
+
+    $('#viewerContainer').height(viewHeight);
+    $('#outerContainer')
+      .height($('#mainContainer .toolbar').height() + viewHeight)
+      .addClass('view');
   }
 
   containsElement(element) {

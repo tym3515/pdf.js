@@ -52,7 +52,8 @@ const DEFAULT_SCALE_DELTA = 1.1;
 const DISABLE_AUTO_FETCH_LOADING_BAR_TIMEOUT = 5000; // ms
 const FORCE_PAGES_LOADED_TIMEOUT = 10000; // ms
 const WHEEL_ZOOM_DISABLED_TIMEOUT = 1000; // ms
-
+const SWIPE_MIN_DISTANCE_THRESHOLD = 50;
+const SWIPE_ANGLE_THRESHOLD = Math.PI / 6;
 const ViewOnLoad = {
   UNKNOWN: -1,
   PREVIOUS: 0, // Default value.
@@ -1411,6 +1412,9 @@ let PDFViewerApplication = {
     window.addEventListener('hashchange', _boundEvents.windowHashChange);
     window.addEventListener('beforeprint', _boundEvents.windowBeforePrint);
     window.addEventListener('afterprint', _boundEvents.windowAfterPrint);
+    window.addEventListener('touchstart', touchSwipeBind);
+    window.addEventListener('touchmove', touchSwipeBind);
+    window.addEventListener('touchend', touchSwipeBind);
   },
 
   unbindEvents() {
@@ -1495,16 +1499,17 @@ if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
         // Hosted or local viewer, allow for any file locations
         return;
       }
-      let { origin, protocol, } = new URL(file, window.location.href);
+      // let { origin, protocol, } = new URL(file, window.location.href);
       // Removing of the following line will not guarantee that the viewer will
       // start accepting URLs from foreign origin -- CORS headers on the remote
       // server must be properly configured.
       // IE10 / IE11 does not include an origin in `blob:`-URLs. So don't block
       // any blob:-URL. The browser's same-origin policy will block requests to
       // blob:-URLs from other origins, so this is safe.
-      if (origin !== viewerOrigin && protocol !== 'blob:') {
-        throw new Error('file origin does not match viewer\'s');
-      }
+      // 跨域文件访问开启
+      // if (origin !== viewerOrigin && protocol !== 'blob:') {
+      //   throw new Error('file origin does not match viewer\'s');
+      // }
     } catch (ex) {
       let message = ex && ex.message;
       PDFViewerApplication.l10n.get('loading_error', null,
@@ -2091,9 +2096,51 @@ function setZoomDisabledTimeout() {
   }, WHEEL_ZOOM_DISABLED_TIMEOUT);
 }
 
+function _goToPreviousPage(pdfViewer) {
+  let page = pdfViewer.currentPageNumber;
+  // If we're at the first page, we don't need to do anything.
+  if (page <= 1) {
+    return false;
+  }
+  pdfViewer.currentPageNumber = (page - 1);
+
+  pdfViewer.update();
+  return true;
+}
+
+/**
+ * @private
+ */
+function _goToNextPage(pdfViewer) {
+  let page = pdfViewer.currentPageNumber;
+  // If we're at the last page, we don't need to do anything.
+  if (page >= pdfViewer.pagesCount) {
+    return false;
+  }
+  pdfViewer.currentPageNumber = (page + 1);
+
+  pdfViewer.update();
+  return true;
+}
+
 function webViewerWheel(evt) {
   const { pdfViewer, supportedMouseWheelZoomModifierKeys, } =
     PDFViewerApplication;
+
+  console.log('evt', evt);
+  console.log('pdfViewer', pdfViewer);
+  let delta = evt.deltaY;
+
+  if (delta > 0) {
+    console.log('下滚');
+    _goToNextPage(pdfViewer);
+  }
+  if (delta < 0) {
+    console.log('上滚');
+    _goToPreviousPage(pdfViewer);
+  }
+
+  return;
 
   if (pdfViewer.isInPresentationMode) {
     return;
@@ -2135,6 +2182,61 @@ function webViewerWheel(evt) {
   } else {
     setZoomDisabledTimeout();
   }
+}
+
+
+function touchSwipeBind(evt) {
+  const { pdfViewer, } = PDFViewerApplication;
+
+  console.log('evt', evt);
+  console.log('pdfViewer', pdfViewer);
+  switch (evt.type) {
+    case 'touchstart':
+      this.touchSwipeState = {
+        startX: evt.touches[0].pageX,
+        startY: evt.touches[0].pageY,
+        endX: evt.touches[0].pageX,
+        endY: evt.touches[0].pageY,
+      };
+      break;
+    case 'touchmove':
+      if (this.touchSwipeState === null) {
+        return;
+      }
+      this.touchSwipeState.endX = evt.touches[0].pageX;
+      this.touchSwipeState.endY = evt.touches[0].pageY;
+      // Avoid the swipe from triggering browser gestures (Chrome in
+      // particular has some sort of swipe gesture in fullscreen mode).
+      evt.preventDefault();
+      break;
+    case 'touchend':
+      if (this.touchSwipeState === null) {
+        return;
+      }
+      let delta = 0;
+      let dx = this.touchSwipeState.endX - this.touchSwipeState.startX;
+      let dy = this.touchSwipeState.endY - this.touchSwipeState.startY;
+      let absAngle = Math.abs(Math.atan2(dy, dx));
+      if (Math.abs(dx) > SWIPE_MIN_DISTANCE_THRESHOLD &&
+        (absAngle <= SWIPE_ANGLE_THRESHOLD ||
+          absAngle >= (Math.PI - SWIPE_ANGLE_THRESHOLD))) {
+        // Horizontal swipe.
+        delta = dx;
+      } else if (Math.abs(dy) > SWIPE_MIN_DISTANCE_THRESHOLD &&
+        Math.abs(absAngle - (Math.PI / 2)) <= SWIPE_ANGLE_THRESHOLD) {
+        // Vertical swipe.
+        delta = dy;
+      }
+      if (delta > 0) {
+        console.log('上一页');
+        _goToPreviousPage(pdfViewer);
+      } else if (delta < 0) {
+        console.log('下一页');
+        _goToNextPage(pdfViewer);
+      }
+      break;
+  }
+
 }
 
 function webViewerClick(evt) {

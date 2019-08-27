@@ -54,14 +54,75 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!--#endif-->
 
 <!--#if !MINIFIED -->
+    <style>
+      #viewerContainer{
+        overflow: hidden;
+      }
+      #viewer{
+        /*overflow: auto;*/
+      }
+
+      #outerContainer.view{
+        position: absolute;
+        left: 0;
+        z-index: 1;
+        top: 50%;
+        /*height: 300px;*/
+        transform: translateY(-50%);
+      }
+      .docBox{
+        position: fixed;
+        top: 0;
+        z-index: 500;
+      }
+    </style>
     <script src="viewer.js"></script>
+    <script>
+        var getUrlParam = function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+        function UpdateUrlParam(name, val) {
+            var thisURL = document.location.href;
+
+            // 如果 url中包含这个参数 则修改
+            if (thisURL.indexOf(name + '=') > 0) {
+                var v = getUrlParam(name);
+                if (v != null) {
+                    // 是否包含参数
+                    thisURL = thisURL.replace(name + '=' + v, name + '=' + val);
+
+                } else {
+                    thisURL = thisURL.replace(name + '=', name + '=' + val);
+                }
+
+            } // 不包含这个参数 则添加
+            else {
+                if (thisURL.indexOf("?") > 0) {
+                    thisURL = thisURL + "&" + name + "=" + val;
+                } else {
+                    thisURL = thisURL + "?" + name + "=" + val;
+                }
+            }
+            console.log(thisURL);
+            location.href = thisURL;
+            return thisURL;
+        };
+    </script>
 <!--#else-->
 <!--#include viewer-snippet-minified.html-->
 <!--#endif-->
+    <script src="./jquery-1.8.2.js"></script>
 
   </head>
 
   <body tabindex="1" class="loadingInProgress">
+    <div class="docBox">
+      <button onclick="UpdateUrlParam('file', 'https://www.p-y.xyz/document.pdf')">文档一</button>
+      <button onclick="UpdateUrlParam('file', 'https://www.p-y.xyz/car.pdf')">文档car</button>
+      <button onclick="UpdateUrlParam('file', 'https://www.p-y.xyz/sdk.pdf')">文档sdk</button>
+    </div>
     <div id="outerContainer">
 
       <div id="sidebarContainer">
@@ -127,7 +188,7 @@ See https://github.com/adobe-type-tools/cmap-resources
               <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
             </button>
 
-            <button id="secondaryOpenFile" class="secondaryToolbarButton openFile visibleLargeView" title="Open File" tabindex="52" data-l10n-id="open_file">
+            <button id="secondaryOpenFile" class="secondaryToolbarButton openFile visibleLargeView hidden" title="Open File" tabindex="52" data-l10n-id="open_file">
               <span data-l10n-id="open_file_label">Open</span>
             </button>
 
@@ -213,7 +274,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                 <button id="viewFind" class="toolbarButton" title="Find in Document" tabindex="12" data-l10n-id="findbar">
                   <span data-l10n-id="findbar_label">Find</span>
                 </button>
-                <div class="splitToolbarButton hiddenSmallView">
+                <div class="splitToolbarButton ">
                   <button class="toolbarButton pageUp" title="Previous Page" id="previous" tabindex="13" data-l10n-id="previous">
                     <span data-l10n-id="previous_label">Previous</span>
                   </button>
@@ -414,5 +475,22 @@ See https://github.com/adobe-type-tools/cmap-resources
 
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>
+    <script>
+        function size() {
+            var clientWidth = document.documentElement.clientWidth || document.body.offsetWidth;
+            var clientHeight = document.documentElement.clientHeight || document.body.offsetHeight;
+
+            if (clientWidth < clientHeight) {
+                $('#outerContainer').width('100%')
+                // .height(clientWidth * 9 / 16);
+            } else {
+                $('#outerContainer').width(clientWidth)
+                // .height('100%');
+            }
+            console.log($('#viewer .page').height());
+        }
+        window.addEventListener('orientationchange' in window ? 'orientationchange' : 'resize', size);
+        size()
+    </script>
   </body>
 </html>
