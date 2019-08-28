@@ -57,11 +57,14 @@ See https://github.com/adobe-type-tools/cmap-resources
     <style>
       #viewerContainer{
         overflow: hidden;
+        /*max-height: calc(100%-32px);*/
       }
       #viewer{
-        /*overflow: auto;*/
+        overflow: auto;
       }
-
+      #outerContainer{
+        max-height: 100%;
+      }
       #outerContainer.view{
         position: absolute;
         left: 0;
@@ -73,7 +76,7 @@ See https://github.com/adobe-type-tools/cmap-resources
       .docBox{
         position: fixed;
         top: 0;
-        z-index: 500;
+        z-index: 99500;
       }
     </style>
     <script src="viewer.js"></script>
@@ -184,7 +187,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 
         <div id="secondaryToolbar" class="secondaryToolbar hidden doorHangerRight">
           <div id="secondaryToolbarButtonContainer">
-            <button id="secondaryPresentationMode" class="secondaryToolbarButton presentationMode visibleLargeView" title="Switch to Presentation Mode" tabindex="51" data-l10n-id="presentation_mode">
+            <button id="secondaryPresentationMode" class="secondaryToolbarButton presentationMode visibleLargeView hidden" title="Switch to Presentation Mode" tabindex="51" data-l10n-id="presentation_mode">
               <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
             </button>
 
@@ -322,7 +325,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                     <span data-l10n-id="zoom_in_label">Zoom In</span>
                    </button>
                 </div>
-                <span id="scaleSelectContainer" class="dropdownToolbarButton">
+                <span id="scaleSelectContainer" class="dropdownToolbarButton ">
                   <select id="scaleSelect" title="Zoom" tabindex="23" data-l10n-id="zoom">
                     <option id="pageAutoOption" title="" value="auto" selected="selected" data-l10n-id="page_scale_auto">Automatic Zoom</option>
                     <option id="pageActualOption" title="" value="page-actual" data-l10n-id="page_scale_actual">Actual Size</option>
@@ -478,16 +481,16 @@ See https://github.com/adobe-type-tools/cmap-resources
     <script>
         function size() {
             var clientWidth = document.documentElement.clientWidth || document.body.offsetWidth;
-            var clientHeight = document.documentElement.clientHeight || document.body.offsetHeight;
-
-            if (clientWidth < clientHeight) {
-                $('#outerContainer').width('100%')
-                // .height(clientWidth * 9 / 16);
-            } else {
-                $('#outerContainer').width(clientWidth)
-                // .height('100%');
-            }
-            console.log($('#viewer .page').height());
+            // var clientHeight = document.documentElement.clientHeight || document.body.offsetHeight;
+            //
+            // if (clientWidth < clientHeight) {
+            //     $('#outerContainer').width('100%')
+            //     // .height(clientWidth * 9 / 16);
+            // } else {
+            //     $('#outerContainer').width(clientWidth)
+            //     // .height('100%');
+            // }
+            // console.log($('#viewer .page').height());
         }
         window.addEventListener('orientationchange' in window ? 'orientationchange' : 'resize', size);
         size()

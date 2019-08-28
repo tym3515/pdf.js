@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/* global $ */
 import {
   CSS_UNITS, DEFAULT_SCALE, DEFAULT_SCALE_VALUE, getGlobalEventBus,
   getVisibleElements, isPortraitOrientation, isValidRotation, isValidScrollMode,
@@ -127,6 +127,7 @@ class BaseViewer {
       throw new Error('Cannot initialize BaseViewer.');
     }
     this._name = this.constructor.name;
+    this._viewHeight = 0;
 
     this.container = options.container;
     this.viewer = options.viewer || options.container.firstElementChild;
@@ -418,6 +419,8 @@ class BaseViewer {
     firstPagePromise.then((pdfPage) => {
       let scale = this.currentScale;
       let viewport = pdfPage.getViewport({ scale: scale * CSS_UNITS, });
+
+      console.log();
       for (let pageNum = 1; pageNum <= pagesCount; ++pageNum) {
         let textLayerFactory = null;
         if (this.textLayerMode !== TextLayerMode.DISABLE) {
@@ -845,11 +848,28 @@ class BaseViewer {
 
     // 移动端调整高度，文档适应屏幕居中 pc注销
     let viewHeight = $('#viewer .page').height();
+    let clientWidth = document.documentElement.clientWidth || document.body.offsetWidth;
+    let clientHeight = document.documentElement.clientHeight || document.body.offsetHeight;
 
-    $('#viewerContainer').height(viewHeight);
-    $('#outerContainer')
-      .height($('#mainContainer .toolbar').height() + viewHeight)
-      .addClass('view');
+    if (clientWidth < clientHeight) {
+      // 竖屏
+      if (!window.isInit) {
+        window.isInit = true;
+        $('#viewerContainer').height(viewHeight);
+        $('#outerContainer')
+          .height($('#mainContainer .toolbar').height() + viewHeight)
+          .addClass('view');
+      }
+    } else {
+      // 横屏
+      if ($('#viewerContainer').height() >= clientHeight - $('#mainContainer .toolbar').height()) {
+        $('#viewerContainer').height(viewHeight);
+        $('#outerContainer')
+          .height($('#mainContainer .toolbar').height() + viewHeight)
+          .addClass('view');
+      }
+    }
+
   }
 
   containsElement(element) {

@@ -109,7 +109,10 @@ class SecondaryToolbar {
     this.reset();
 
     // Bind the event listeners for click, cursor tool, and scroll/spread mode
-    // actions.
+    // actions  touchmove 影响主屏滚动
+    this.toolbarButtonContainer.addEventListener('touchmove', function (e) {
+      e.stopPropagation();
+    });
     this._bindClickListeners();
     this._bindCursorToolsListener(options);
     this._bindScrollModeListener(options);

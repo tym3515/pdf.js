@@ -1412,9 +1412,9 @@ let PDFViewerApplication = {
     window.addEventListener('hashchange', _boundEvents.windowHashChange);
     window.addEventListener('beforeprint', _boundEvents.windowBeforePrint);
     window.addEventListener('afterprint', _boundEvents.windowAfterPrint);
-    window.addEventListener('touchstart', touchSwipeBind);
-    window.addEventListener('touchmove', touchSwipeBind);
-    window.addEventListener('touchend', touchSwipeBind);
+    // window.addEventListener('touchstart', touchSwipeBind);
+    // window.addEventListener('touchmove', touchSwipeBind);
+    // window.addEventListener('touchend', touchSwipeBind);
   },
 
   unbindEvents() {
@@ -1477,6 +1477,9 @@ let PDFViewerApplication = {
     window.removeEventListener('hashchange', _boundEvents.windowHashChange);
     window.removeEventListener('beforeprint', _boundEvents.windowBeforePrint);
     window.removeEventListener('afterprint', _boundEvents.windowAfterPrint);
+    window.removeEventListener('touchstart', touchSwipeBind);
+    window.removeEventListener('touchmove', touchSwipeBind);
+    window.removeEventListener('touchend', touchSwipeBind);
 
     _boundEvents.windowResize = null;
     _boundEvents.windowHashChange = null;
@@ -2184,7 +2187,6 @@ function webViewerWheel(evt) {
   }
 }
 
-
 function touchSwipeBind(evt) {
   const { pdfViewer, } = PDFViewerApplication;
 
@@ -2355,10 +2357,10 @@ function webViewerKeyDown(evt) {
   // CTRL+ALT or Option+Command
   if (cmd === 3 || cmd === 10) {
     switch (evt.keyCode) {
-      case 80: // p
-        PDFViewerApplication.requestPresentationMode();
-        handled = true;
-        break;
+      // case 80: // 取消全屏模式
+      //   PDFViewerApplication.requestPresentationMode();
+      //   handled = true;
+      //   break;
       case 71: // g
         // focuses input#pageNumber field
         PDFViewerApplication.appConfig.toolbar.pageNumber.select();

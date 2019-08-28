@@ -36,7 +36,7 @@ const defaultOptions = {
   defaultUrl: {
     /** @type {string} */
     // value: 'document.pdf',
-    // value: 'https://www.p-y.xyz/document.pdf',
+    value: 'https://www.p-y.xyz/document.pdf',
     // value: 'https://www.p-y.xyz/car.pdf',
     kind: OptionKind.VIEWER,
   },
@@ -240,7 +240,8 @@ if (typeof PDFJSDev === 'undefined' ||
   };
   defaultOptions.locale = {
     /** @type {string} */
-    value: (typeof navigator !== 'undefined' ? navigator.language : 'en-US'),
+    // value: (typeof navigator !== 'undefined' ? navigator.language : 'en-US'),
+    value: (typeof navigator !== 'undefined' ? 'zh-CN' : 'zh-CN'),
     kind: OptionKind.VIEWER,
   };
   defaultOptions.printResolution = {
